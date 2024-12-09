@@ -1,0 +1,757 @@
+import React, { useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const workTypesList = [
+  "झाडांना पाणी देणे",
+  "आळ तयार करणे",
+  "ग्रीन नेट बांधणे",
+  "मोठे गवत कापणे",
+  "माती भुसभुशीत करणे",
+  "गांडूळ खत टाकणे",
+  "व्हर्मी कंपोस्ट खत टाकणे",
+  "झाडांची पाने धुणे",
+  "कंपोस्ट खत तयार करणे",
+  "गांडूळ खत तयार करणे",
+  "पाण्याच्या टाक्या भरणे",
+  "ग्रास कटिंग किंवा इतर मशीन दुरुस्त करणे",
+  "झाडांचे व इतर परिसर सर्वेक्षण करणे",
+  "साहित्य नोंदणी करणे",
+  "हजेरी नोंद करणे",
+  "झुकलेल्या झाडांना आधार देणे",
+  "पाण्याचा निचरा करणे",
+  "कीटक नाशके फवारणे",
+  "झाडा जवळचे गवत कापणे",
+  "झाडांची माहिती अद्ययावत करणे",
+  "नवीन झाडे लावणे",
+  "मेलेली झाडे बदलणे",
+  "झाडांची संख्या अद्ययावत करणे",
+  "झाडांना नंबर देणे",
+  "नवीन पाईप टाकणे",
+  "पाईप दुरुस्त करणे",
+  "गार्डन तयार करणे",
+];
+
+const AttendancePage = () => {
+  const { auth } = useContext(AuthContext); // Access auth context
+  const [showModal, setShowModal] = useState(false);
+  const [selectedWorkTypes, setSelectedWorkTypes] = useState([]);
+
+  // Toggle work types selection
+  const toggleWorkType = (type) => {
+    setSelectedWorkTypes((prev) =>
+      prev.includes(type)
+        ? prev.filter((item) => item !== type)
+        : [...prev, type]
+    );
+  };
+
+  // Submit attendance
+  const submitAttendance = async () => {
+    if (!auth.user) {
+      toast.error("You must be logged in to mark attendance.");
+      return;
+    }
+
+    if (selectedWorkTypes.length === 0) {
+      toast.error("Please select at least one work type.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/attendance/atd",
+        {
+          user_id: auth.user.id,
+          full_name: auth.user.full_name,
+          phone_number: auth.user.phone_number,
+          email: auth.user.email,
+          zone: auth.user.zone,
+          vibhaag: auth.user.vibhaag,
+          work_types: selectedWorkTypes,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${auth.token}`, // Include the token in the request headers
+          },
+        }
+      );
+      toast.success(response.data.message);
+      setShowModal(false);
+      setSelectedWorkTypes([]);
+    } catch (error) {
+      console.error("Error submitting attendance:", error);
+      toast.error("Failed to submit attendance. Please try again.");
+    }
+  };
+
+  return (
+    <div className="p-4 min-h-screen bg-gray-100">
+      <h1 className="text-2xl font-bold text-center mb-4">Mark Attendance</h1>
+      <p className="font-semibold text-gray-600 mb-4">
+        ❗Please Click on "
+        <span className="text-indigo-500 font-mono">Check-In</span>" button to
+        mark attendance.
+      </p>
+      {auth.user ? (
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-indigo-500 text-white font-bold px-4 py-2 rounded-xl hover:bg-indigo-600"
+        >
+          Check-In
+        </button>
+      ) : (
+        <p className="text-center text-gray-700">
+          Please log in to mark your attendance.
+        </p>
+      )}
+
+      {showModal && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black/50 flex justify-center items-center">
+          <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/3 p-6">
+            <h2 className="text-lg font-semibold mb-4">Select Type of Work</h2>
+            <div className="max-h-60 overflow-y-auto">
+              {workTypesList.map((type) => (
+                <div key={type} className="flex items-center mb-2">
+                  <input
+                    type="checkbox"
+                    id={type}
+                    value={type}
+                    checked={selectedWorkTypes.includes(type)}
+                    onChange={() => toggleWorkType(type)}
+                    className="mr-2"
+                  />
+                  <label htmlFor={type} className="text-gray-700">
+                    {type}
+                  </label>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end mt-4 space-x-2">
+              <button
+                onClick={submitAttendance}
+                className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 active:scale-90"
+              >
+                Submit
+              </button>
+              <button
+                onClick={() => setShowModal(false)}
+                className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 active:scale-90"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <ToastContainer />
+    </div>
+  );
+};
+
+export default AttendancePage;
+*********************************************************************************************************************************
+// import React, { useState, useContext, useEffect } from "react";
+// import { AuthContext } from "../context/AuthContext";
+// import axios from "axios";
+
+// const workTypesList = [
+//   "झाडांना पाणी देणे",
+//   "आळ तयार करणे",
+//   "ग्रीन नेट बांधणे",
+//   "मोठे गवत कापणे",
+//   "माती भुसभुशीत करणे",
+//   "गांडूळ खत टाकणे",
+//   "व्हर्मी कंपोस्ट खत टाकणे",
+//   "झाडांची पाने धुणे",
+//   "कंपोस्ट खत तयार करणे",
+//   "गांडूळ खत तयार करणे",
+//   "पाण्याच्या टाक्या भरणे",
+//   "ग्रास कटिंग किंवा इतर मशीन दुरुस्त करणे",
+//   "झाडांचे व इतर परिसर सर्वेक्षण करणे",
+//   "साहित्य नोंदणी करणे",
+//   "हजेरी नोंद करणे",
+//   "झुकलेल्या झाडांना आधार देणे",
+//   "पाण्याचा निचरा करणे",
+//   "कीटक नाशके फवारणे",
+//   "झाडा जवळचे गवत कापणे",
+//   "झाडांची माहिती अद्ययावत करणे",
+//   "नवीन झाडे लावणे",
+//   "मेलेली झाडे बदलणे",
+//   "झाडांची संख्या अद्ययावत करणे",
+//   "झाडांना नंबर देणे",
+//   "नवीन पाईप टाकणे",
+//   "पाईप दुरुस्त करणे",
+//   "गार्डन तयार करणे",
+// ];
+
+// const AttendancePage = () => {
+//   const { auth } = useContext(AuthContext);
+//   const [showModal, setShowModal] = useState(false);
+//   const [selectedWorkTypes, setSelectedWorkTypes] = useState([]);
+//   const [attendanceRecords, setAttendanceRecords] = useState([]);
+//   const [date, setDate] = useState("");
+
+//   // Fetch attendance for a specific date
+//   const fetchAttendance = async () => {
+//     try {
+//       const response = await axios.get(
+//         `http://localhost:5000/attendance/${date}`,
+//         {
+//           headers: {
+//             Authorization: `Bearer ${auth.token}`,
+//           },
+//         }
+//       );
+//       setAttendanceRecords(response.data.attendance);
+//     } catch (error) {
+//       console.error("Error fetching attendance records:", error);
+//       alert("Failed to fetch attendance records.");
+//     }
+//   };
+
+//   // Toggle work types selection
+//   const toggleWorkType = (type) => {
+//     setSelectedWorkTypes((prev) =>
+//       prev.includes(type)
+//         ? prev.filter((item) => item !== type)
+//         : [...prev, type]
+//     );
+//   };
+
+//   // Submit attendance
+//   const submitAttendance = async () => {
+//     if (!auth.user) {
+//       alert("You must be logged in to mark attendance.");
+//       return;
+//     }
+
+//     if (selectedWorkTypes.length === 0) {
+//       alert("Please select at least one work type.");
+//       return;
+//     }
+
+//     try {
+//       const response = await axios.post(
+//         "http://localhost:5000/attendance/atd",
+//         {
+//           user_id: auth.user.id,
+//           full_name: auth.user.full_name,
+//           phone_number: auth.user.phone_number,
+//           email: auth.user.email,
+//           zone: auth.user.zone,
+//           vibhaag: auth.user.vibhaag,
+//           work_types: selectedWorkTypes,
+//           timestamp: new Date().toISOString(),
+//         },
+//         {
+//           headers: {
+//             Authorization: `Bearer ${auth.token}`,
+//           },
+//         }
+//       );
+//       alert(response.data.message);
+//       setShowModal(false);
+//       setSelectedWorkTypes([]);
+//     } catch (error) {
+//       console.error("Error submitting attendance:", error);
+//       alert("Failed to submit attendance.");
+//     }
+//   };
+
+//   return (
+//     <div className="attendance-page">
+//       <h1>Mark Attendance</h1>
+//       {auth.user ? (
+//         <button onClick={() => setShowModal(true)} className="check-in-btn">
+//           Check-In
+//         </button>
+//       ) : (
+//         <p>Please log in to mark your attendance.</p>
+//       )}
+
+//       {showModal && (
+//         <div className="fixed top-0 left-0 right-0 bottom-0 bg-black/50 flex justify-center items-center">
+//           <div className="bg-white p-4 rounded-lg w-4/5 max-w-sm">
+//             <h2>Select Type of Work</h2>
+//             <div className="work-types">
+//               {workTypesList.map((type) => (
+//                 <div key={type}>
+//                   <input
+//                     type="checkbox"
+//                     id={type}
+//                     value={type}
+//                     checked={selectedWorkTypes.includes(type)}
+//                     onChange={() => toggleWorkType(type)}
+//                   />
+//                   <label htmlFor={type}>{type}</label>
+//                 </div>
+//               ))}
+//             </div>
+//             <div className="modal-actions">
+//               <button onClick={submitAttendance} className="submit-btn">
+//                 Submit
+//               </button>
+//               <button
+//                 onClick={() => setShowModal(false)}
+//                 className="cancel-btn"
+//               >
+//                 Cancel
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       <div className="attendance-history">
+//         <h2>View Attendance</h2>
+//         <input
+//           type="date"
+//           value={date}
+//           onChange={(e) => setDate(e.target.value)}
+//         />
+//         <button onClick={fetchAttendance}>Fetch Records</button>
+//         {attendanceRecords.length > 0 ? (
+//           <ul>
+//             {attendanceRecords.map((record, index) => (
+//               <li key={index}>
+//                 <strong>{record.full_name}</strong>:{" "}
+//                 {record.work_types.join(", ")} (Zone: {record.zone})
+//               </li>
+//             ))}
+//           </ul>
+//         ) : (
+//           <p>No records found for this date.</p>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default AttendancePage;
+*********************************************************************************************************************************
+
+
+UpdatePlant.jsx:
+
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const UpdatePlant = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  // const { zone, plantNumber } = location.state || {};
+  // Get query params from URL
+  const queryParams = new URLSearchParams(location.search);
+  const plant_zone = queryParams.get("zone");
+  const plantNumber = queryParams.get("plantNumber");
+  const [searchParams, setSearchParams] = useState({
+    // plant_zone: "",
+    // plant_number: "",
+    plant_zone: plant_zone || "",
+    plant_number: plantNumber || "",
+  });
+  const [formData, setFormData] = useState(null);
+  const [userInfo, setUserInfo] = useState({
+    full_name: "",
+    zone: "",
+    vibhaag: "",
+  });
+  const [plantImage, setPlantImage] = useState(null);
+
+  useEffect(() => {
+    toast.info("Please enter plant zone and number to fetch the plant data.");
+  }, []);
+
+  // Fetch user info
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          toast.error("Please log in to continue.");
+          navigate("/login");
+          return;
+        }
+        const response = await axios.get("http://localhost:5000/users/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUserInfo(response.data);
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+        if (error.response?.status === 401) {
+          toast.error("Session expired. Please log in again.");
+          localStorage.removeItem("authToken");
+          navigate("/login");
+        } else {
+          toast.error("Error fetching user info.");
+        }
+      }
+    };
+    fetchUserInfo();
+  }, [navigate]);
+
+  // Handle input changes for search parameters
+  const handleSearchChange = (e) => {
+    const { name, value } = e.target;
+    setSearchParams((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const fetchPlantData = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        toast.error("Please log in to fetch plant data.");
+        navigate("/login");
+        return;
+      }
+
+      const response = await axios.get(
+        "http://localhost:5000/plants/get-plant",
+        {
+          params: searchParams,
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.data) {
+        // Format the `planted_on` field to `YYYY-MM-DD`
+        const formattedData = {
+          ...response.data,
+          planted_on: response.data.planted_on
+            ? new Date(response.data.planted_on).toISOString().split("T")[0]
+            : "",
+        };
+
+        setFormData(formattedData);
+        toast.success("Plant data fetched successfully.");
+      } else {
+        toast.error("No plant found with the provided details.");
+      }
+    } catch (error) {
+      toast.error("Error fetching plant data.");
+      console.error("Fetch error:", error);
+    }
+  };
+
+  // Handle input changes for form data
+  const handleFormChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  // Handle image upload
+  const handleFileChange = (e) => {
+    setPlantImage(e.target.files[0]);
+  };
+
+  // Fetch GPS location
+  const fetchLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setFormData((prev) => ({
+            ...prev,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          }));
+          toast.success("Location fetched successfully.");
+        },
+        (error) => console.error("Error fetching location:", error)
+      );
+    } else {
+      toast.error("Geolocation is not supported by this browser.");
+    }
+  };
+
+  // Handle form submission
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!formData) {
+      toast.error("Please fetch plant data before updating.");
+      return;
+    }
+
+    const data = new FormData();
+    Object.keys(formData).forEach((key) => data.append(key, formData[key]));
+    data.append("updated_by_full_name", userInfo.full_name);
+    data.append("updated_by_zone", userInfo.zone);
+    data.append("updated_by_vibhaag", userInfo.vibhaag);
+    if (plantImage) data.append("plant_image", plantImage);
+
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        toast.error("You need to be logged in to update the plant.");
+        navigate("/login");
+        return;
+      }
+
+      await axios.put(`http://localhost:5000/plants/update-plant`, data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Plant updated successfully!");
+      setFormData(null);
+      setPlantImage(null);
+    } catch (error) {
+      toast.error("Error updating plant.");
+      console.error("Update error:", error);
+    }
+  };
+
+  return (
+    <div className="update-plant p-4 sm:p-6 lg:p-8">
+      <ToastContainer />
+      <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">
+        Update Plant
+      </h2>
+
+      <div className="space-y-4">
+        <label className="block text-sm sm:text-base">
+          Plant Zone
+          <input
+            type="number"
+            name="plant_zone"
+            placeholder="Plant Zone Number"
+            value={searchParams.plant_zone}
+            onChange={handleSearchChange}
+            className="mt-2 p-3 border rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            required
+          />
+        </label>
+
+        <label className="block text-sm sm:text-base">
+          Plant Number
+          <input
+            type="text"
+            name="plant_number"
+            placeholder="Enter Plant Number"
+            value={searchParams.plant_number}
+            onChange={handleSearchChange}
+            className="mt-2 p-3 border rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            required
+          />
+        </label>
+
+        <button
+          onClick={fetchPlantData}
+          className="w-full sm:w-auto mt-4 py-2 px-4 bg-yellow-500 text-white rounded-2xl shadow hover:bg-yellow-600 active:scale-95 transition duration-200"
+        >
+          Fetch Plant Data
+        </button>
+      </div>
+
+      {formData && (
+        <form onSubmit={handleUpdate} className="space-y-6 mt-8">
+          {/* Plant Details */}
+          <div>
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+              Plant Details
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <label className="block text-sm sm:text-base">
+                Plant Name
+                <input
+                  type="text"
+                  name="plant_name"
+                  placeholder="Enter Plant Name"
+                  value={formData.plant_name}
+                  onChange={handleFormChange}
+                  className="mt-2 p-3 border rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  required
+                />
+              </label>
+              <label className="block text-sm sm:text-base">
+                Plant Number
+                <input
+                  type="text"
+                  name="plant_number"
+                  placeholder="Enter Plant Number"
+                  value={formData.plant_number}
+                  onChange={handleFormChange}
+                  className="mt-2 p-3 border bg-gray-100 rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  required
+                />
+              </label>
+              <label className="block text-sm sm:text-base">
+                Plant Zone
+                <input
+                  type="number"
+                  name="plant_zone"
+                  placeholder="Plant Zone Number"
+                  value={formData.plant_zone}
+                  onChange={handleFormChange}
+                  className="mt-2 p-3 border bg-gray-100 rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  required
+                />
+              </label>
+              <label className="block text-sm sm:text-base">
+                Height (meters)
+                <input
+                  type="number"
+                  name="height"
+                  placeholder="Enter Plant Height"
+                  value={formData.height}
+                  onChange={handleFormChange}
+                  className="mt-2 p-3 border rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  required
+                />
+              </label>
+              <label className="block text-sm sm:text-base">
+                Planted On
+                <input
+                  type="date"
+                  name="planted_on"
+                  value={formData.planted_on}
+                  onChange={handleFormChange}
+                  className="mt-2 p-3 border rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  required
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Location */}
+          <div>
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Location</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <label className="block text-sm sm:text-base">
+                Latitude
+                <input
+                  type="number"
+                  name="latitude"
+                  value={formData.latitude}
+                  onChange={handleFormChange}
+                  className="mt-2 p-3 border rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  required
+                />
+              </label>
+              <label className="block text-sm sm:text-base">
+                Longitude
+                <input
+                  type="number"
+                  name="longitude"
+                  value={formData.longitude}
+                  onChange={handleFormChange}
+                  className="mt-2 p-3 border rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  required
+                />
+              </label>
+            </div>
+            <button
+              type="button"
+              onClick={fetchLocation}
+              className="w-full sm:w-auto mt-4 py-2 px-4 bg-yellow-500 text-white rounded-2xl shadow hover:bg-yellow-600 transition active:scale-95 duration-200"
+            >
+              Fetch GPS Location
+            </button>
+          </div>
+
+          {/* Health and Water Schedule */}
+          <div>
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+              Health and Water Schedule
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <label className="block text-sm sm:text-base">
+                Health Status
+                <select
+                  name="health_status"
+                  value={formData.health_status}
+                  onChange={handleFormChange}
+                  className="mt-2 p-3 border rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                >
+                  <option value="Good">Good</option>
+                  <option value="Deceased">Deceased</option>
+                  <option value="Infected">Infected</option>
+                </select>
+              </label>
+              <label className="block text-sm sm:text-base">
+                Water Schedule
+                <select
+                  name="water_schedule"
+                  value={formData.water_schedule}
+                  onChange={handleFormChange}
+                  className="mt-2 p-3 border rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                >
+                  <option value="Daily">Daily</option>
+                  <option value="Alternate days">Alternate days</option>
+                  <option value="Weekly">Weekly</option>
+                  <option value="Monthly">Monthly</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          {/* Boolean Fields */}
+          <div>
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+              Additional Information
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {[
+                { name: "insects_present", label: "Insects Present" },
+                { name: "fertilizers_applied", label: "Fertilizers Applied" },
+                {
+                  name: "soil_level_maintained",
+                  label: "Soil Level Maintained",
+                },
+                { name: "tree_burnt", label: "Tree Burnt" },
+                { name: "unwanted_grass", label: "Unwanted Grass" },
+                { name: "water_logging", label: "Water Logging" },
+                { name: "compound_maintained", label: "Compound Maintained" },
+              ].map(({ name, label }) => (
+                <label
+                  key={name}
+                  className="flex items-center text-sm sm:text-base"
+                >
+                  <input
+                    type="checkbox"
+                    name={name}
+                    checked={formData[name]}
+                    onChange={handleFormChange}
+                    className="mr-2"
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Image Upload */}
+          <div>
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+              Plant Image
+            </h2>
+            <input
+              type="file"
+              onChange={handleFileChange}
+              className="block w-full border rounded p-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            />
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            className="w-full py-3 bg-yellow-500 text-white font-bold rounded-2xl mt-6 hover:bg-yellow-600 transition duration-200 active:scale-95"
+          >
+            Update Plant
+          </button>
+        </form>
+      )}
+    </div>
+  );
+};
+
+export default UpdatePlant;
