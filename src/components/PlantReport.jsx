@@ -527,7 +527,7 @@ const PlantReport = () => {
       </button>
 
       {records.length > 0 && (
-        <div className="overflow-x-auto border rounded-lg p-4 mb-20">
+        <div className="overflow-x-auto border rounded-lg p-4 mb-12">
           <h3 className="text-xl font-bold mb-4">Plant Reports</h3>
           <table className="table-auto w-full text-left border-collapse">
             <thead>
@@ -629,6 +629,7 @@ const PlantReport = () => {
           onSubmit={handleSubmit}
           className="space-y-6 border p-4 rounded-xl shadow-lg bg-white"
         >
+          <h3 className="text-xl font-bold mb-4">Plant Health Questions</h3>
           {questions.map((q) => (
             <div
               key={q.key}
